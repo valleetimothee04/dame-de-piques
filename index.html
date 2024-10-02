@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="icon" type="image/x-icon" href="https://i.imgur.com/CzX2GlQ.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dame de piques - Compteur de points</title>
+    <!-- Importation des polices depuis Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&family=Ultra&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+      
+      .header {
+        display: inline-block;
+        height: 125px;
+        vertical-align: middle;
+        font-size: 32px;
+        font-weight: bold;
+      }
+      
+      #spadeLogo {
+        width: 100px;
+        vertical-align: middle;
+        margin-right: 20px;
+        margin-left: -10px;
+      }
+
+        h1 {
+            color: #2a2a72;
+            padding-bottom: 10px;
+        }
+      
+        h2 {
+            color: #2a2a72;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        #confirmRound {
+            display: block; 
+            font-family: Rubik;
+            text-transform: uppercase;
+            width: 100%;
+            border: none;
+            background-color: #52d16b;
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition-property: background-color;
+            transition-duration: 300ms;
+        }
+      
+        #confirmRound:hover {
+            background-color: #319946;
+        }
+      
+        #addPlayer {
+            background-color: #d941b5;
+            color: #fff;
+            padding: 10px 15px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition-property: background-color;
+            transition-duration: 300ms;
+        }
+      
+        #addPlayer:hover {
+            background-color: #911d76;
+        }
+        
+        #startGame {
+            width: 100px;
+            margin-left: 15px;
+          margin-top: 15px;
+            background-color: #52d16b;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition-property: background-color;
+            transition-duration: 300ms;
+        }
+      
+        #startGame:hover {
+            background-color: #319946;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2a2a72;
+            color: white;
+            font-weight: 500;
+        }
+
+        td {
+            font-family: 'Ultra', sans-serif;
+            font-size: 1.2em;
+            color: #2a2a72;
+        }
+
+        .totalRow {
+            font-weight: bold;
+            background-color: #fafafa;
+        }
+
+        .winner {
+            background-color: #ffeb3b;
+            font-size: 1.2em;
+            animation: winnerAnimation 1s infinite alternate;
+        }
+
+        @keyframes winnerAnimation {
+            0% { background-color: #ffeb3b; }
+            100% { background-color: #ffc107; }
+        }
+
+       
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img id="spadeLogo" src="https://i.imgur.com/CzX2GlQ.png">
+  <span>Compteur de points</span>
+</div>
+
+    <!-- Formulaire pour personnaliser les noms des joueurs et le nombre de points pour gagner -->
+    <form id="playersForm">
+        <h2>Paramètres de jeu</h2>
+        <label for="playerName1">Nom du joueur 1 :</label>
+        <input type="text" id="playerName1" value="Joueur 1" required><br>
+
+        <label for="playerName2">Nom du joueur 2 :</label>
+        <input type="text" id="playerName2" value="Joueur 2" required><br>
+
+        <label for="winningPoints">Points requis pour gagner :</label>
+        <input type="number" id="winningPoints" value="1000" min="1" required><br><br>
+
+        <button type="button" id="addPlayer"><i class="fa-solid fa-user-plus"></i></button>
+        <button type="submit" id="startGame"><i class="fa-solid fa-play"></i></button>
+    </form>
+
+    <table id="scoreTable" style="display:none;">
+        <thead>
+            <tr id="playersHeader">
+                <th>Ronde</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+            <tr class="totalRow" id="totalRow">
+                <td>Total</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <button id="confirmRound" style="display:none;">Ronde suivante</button>
+    
+    <script>
+        const playersForm = document.getElementById('playersForm');
+        const table = document.getElementById('scoreTable');
+        const playersHeader = document.getElementById('playersHeader');
+        const tbody = table.querySelector('tbody');
+        const totalRow = document.getElementById('totalRow');
+        const confirmRoundBtn = document.getElementById('confirmRound');
+        
+        let playerCount = 2;
+        let currentRound = 1;
+        let playerTotals = Array(playerCount).fill(0);
+        let winningPoints = 1000; // Valeur par défaut
+
+        // Fonction pour ajouter une colonne de joueur
+        function addPlayer(playerName) {
+            const th = document.createElement('th');
+            th.textContent = playerName;
+            playersHeader.appendChild(th);
+
+            const td = document.createElement('td');
+            td.textContent = 0;
+            totalRow.appendChild(td);
+        }
+
+        // Met à jour les totaux affichés dans le tableau
+        function updateTotals() {
+            const totalCells = totalRow.querySelectorAll('td');
+            for (let i = 1; i <= playerCount; i++) {
+                totalCells[i].textContent = playerTotals[i - 1];
+            }
+        }
+
+        // Fonction pour vérifier si un joueur a gagné
+        function checkWinner() {
+            let potentialWinners = [];
+            let highestScore = 0;
+
+            for (let i = 0; i < playerCount; i++) {
+                if (playerTotals[i] >= winningPoints) {
+                    potentialWinners.push({ index: i, score: playerTotals[i] });
+                    if (playerTotals[i] > highestScore) {
+                        highestScore = playerTotals[i];
+                    }
+                }
+            }
+
+            if (potentialWinners.length === 1) {
+                declareWinner(potentialWinners[0].index);
+            } else if (potentialWinners.length > 1) {
+                let winners = potentialWinners.filter(w => w.score === highestScore);
+                if (winners.length === 1) {
+                    declareWinner(winners[0].index);
+                } else {
+                    alert("Égalité parfaite! Une ronde de bris d'égalité est nécessaire.");
+                }
+            }
+        }
+
+        // Fonction pour déclarer le gagnant et ajouter une animation
+        function declareWinner(winnerIndex) {
+            const winnerName = playersHeader.querySelectorAll('th')[winnerIndex + 1].textContent;
+            alert(`${winnerName} a gagné la partie!`);
+            
+            const winnerCells = table.querySelectorAll(`tbody tr td:nth-child(${winnerIndex + 2}), tfoot tr td:nth-child(${winnerIndex + 2})`);
+            winnerCells.forEach(cell => {
+                cell.classList.add('winner');
+            });
+
+            confirmRoundBtn.disabled = true;
+        }
+
+        // Fonction pour ajouter une nouvelle rangée pour les points d'une nouvelle ronde
+        function addNewRoundRow() {
+            const newRow = document.createElement('tr');
+            newRow.dataset.round = currentRound;
+
+            const roundCell = document.createElement('td');
+            roundCell.textContent = currentRound;
+            newRow.appendChild(roundCell);
+
+            for (let i = 1; i <= playerCount; i++) {
+                const pointsCell = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.placeholder = "0";
+                input.min = "0";
+                pointsCell.appendChild(input);
+                newRow.appendChild(pointsCell);
+            }
+
+            tbody.appendChild(newRow);
+            currentRound++;
+        }
+
+        // Ajouter un nouveau joueur dans le formulaire et la table
+        document.getElementById('addPlayer').addEventListener('click', function() {
+            playerCount++;
+            const playerNameInput = document.createElement('input');
+            playerNameInput.type = 'text';
+            playerNameInput.id = `playerName${playerCount}`;
+            playerNameInput.value = `Joueur ${playerCount}`;
+            playerNameInput.required = true;
+
+            const label = document.createElement('label');
+            label.htmlFor = playerNameInput.id;
+            label.textContent = `Nom du joueur ${playerCount} :`;
+
+            playersForm.insertBefore(playerNameInput, document.getElementById('addPlayer'));
+            playersForm.insertBefore(label, playerNameInput);
+        });
+
+        // Gestion du début de partie
+        playersForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            table.style.display = "table";
+            confirmRoundBtn.style.display = "block";
+            playersForm.style.display = "none"; // Masquer le menu de personnalisation
+
+            const playerNames = [];
+            for (let i = 1; i <= playerCount; i++) {
+                const playerName = document.getElementById(`playerName${i}`).value;
+                playerNames.push(playerName);
+                addPlayer(playerName);
+            }
+
+            winningPoints = parseInt(document.getElementById('winningPoints').value) || 1000;
+            addNewRoundRow();
+        });
+
+        // Confirmer les points d'une ronde
+        confirmRoundBtn.addEventListener('click', function() {
+            const currentRoundRow = tbody.querySelector(`tr[data-round="${currentRound - 1}"]`);
+            const pointInputs = currentRoundRow.querySelectorAll('input[type="number"]');
+            const roundPoints = [];
+
+            pointInputs.forEach((input, i) => {
+                const points = parseInt(input.value) || 0;
+                playerTotals[i] += points;
+                roundPoints.push(points);
+
+                const td = document.createElement('td');
+                td.textContent = points;
+                currentRoundRow.replaceChild(td, input.parentElement);
+            });
+
+            updateTotals();
+            checkWinner();
+
+            if (!confirmRoundBtn.disabled) {
+                addNewRoundRow();
+            }
+        });
+
+        // Suppression de la valeur par défaut lors de la première sélection
+        document.addEventListener('focusin', function(e) {
+            if (e.target.tagName === 'INPUT' && e.target.value.includes('Joueur')) {
+                e.target.value = '';
+            }
+        });
+    </script>
+
+</body>
+</html>
